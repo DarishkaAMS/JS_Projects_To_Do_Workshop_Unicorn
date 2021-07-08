@@ -1,11 +1,11 @@
 "use strict";
-const Path = require("path");
+// const Path = require("path");
 const { Validator } = require("uu_appg01_server").Validation;
 const { DaoFactory } = require("uu_appg01_server").ObjectStore;
 const { ValidationHelper } = require("uu_appg01_server").AppServer;
 
 const Errors = require("../api/errors/list-error.js");
-const listMain = require("./todo-wokrshop-abl");
+// const listMain = require("./todo-wokrshop-abl");
 
 const DEFAULTS = {
   pageIndex: 0,
@@ -14,16 +14,28 @@ const DEFAULTS = {
 
 const WARNINGS = {
   createUnsupportedKeys: {
-    code: `${Errors.Create.UC_CODE}unsupportedKeys`
+    code: `${Errors.Create.UC_CODE}unsupportedKeys`,
+    message: "DtoIn contains unsupported keys.",
   },
+
   getUnsupportedKeys: {
-    code: `${Errors.Get.UC_CODE}unsupportedKeys`
+    code: `${Errors.Get.UC_CODE}unsupportedKeys`,
+    message: "DtoIn contains unsupported keys.",
   },
+
   listUnsupportedKeys: {
-    code: `${Errors.List.UC_CODE}unsupportedKeys`
+    code: `${Errors.List.UC_CODE}unsupportedKeys`,
+    message: "DtoIn contains unsupported keys.",
   },
+
   updateUnsupportedKeys: {
-    code: `${Errors.Update.UC_CODE}unsupportedKeys`
+    code: `${Errors.Update.UC_CODE}unsupportedKeys`,
+    message: "DtoIn contains unsupported keys.",
+  },
+
+  deleteUnsupportedKeys: {
+    code: `${Errors.Update.UC_CODE}unsupportedKeys`,
+    message: "DtoIn contains unsupported keys.",
   },
 };
 
@@ -32,55 +44,96 @@ class ListAbl {
   constructor() {
     this.validator = Validator.load();
     this.dao = DaoFactory.getDao("list");
+    this.dao.item = DaoFactory.getDao("item");
   }
 
   async delete(awid, dtoIn) {
-    
+    // HDS 1
+    // 1.1, 1.2, 1.3
+    const validationResult = this.validator.validate("listDeleteDtoInType", dtoIn);
+    const uuAppErrorMap = ValidationHelper.processValidationResult(
+      dtoIn,
+      validationResult,
+      WARNINGS.deleteUnsupportedKeys.code,
+      Errors.Delete.InvalidDtoIn
+    )
+
+    // 1.4
+    if (!("forceDelete" in dtoIn)) dtoIn.forceDelete = false;
+
+    // HDS 2
+    const id = dtoIn.id;
+    const uuList = await this.dao.get(awid, id);
+    if (!uuList) throw new Errors.Delete.ListDoesNotExist(uuAppErrorMap, { id });
+
+    // HDS 3
+    const filter = { awid, listId: id };
+    const uuItemsList = await this.dao.item.listByList(filter);
+    // 3.1
+    if (!dtoIn.forceDelete) {
+      const itemLength = uuItemsList.itemList.length;
+      if (itemLength) {
+        throw new Errors.Delete.ListNotEmpty(uuAppErrorMap, { list: id, numberOfItems: uuItemsList.pageInfo.total });
+      }
+      try {
+        await this.dao.delete(awid, id);
+      } catch (error) {
+        throw new Errors.Delete.ListDaoDeleteFailed(uuAppErrorMap, { cause: error });
+      }
+      // 3.2
+    } else {
+      try {
+        await this.dao.item.deleteMany(awid, id);
+      } catch (error) {
+        throw new Errors.Delete.ItemDaoDeleteFailed({ cause: error });
+      }
+      // HDS 4
+      try {
+        await this.dao.delete(awid, id);
+      } catch (error) {
+        throw new Errors.Delete.ListDaoDeleteFailed(uuAppErrorMap, { cause: error });
+      }
+    }
+    // HDS 5
+    return { uuAppErrorMap };
   }
 
   async update(awid, dtoIn) {
-    // HDS1
-    // A1,2
-    // await listMain.checkInstance(
-    //   awid,
-    //   Errors.Update.listInstanceDoesNotExist
-    // );
-    // HDS2
-    // HDS2.1
+
+    // HDS 1
+    // 1.1, 1.2, 1.3
     const validationResult = this.validator.validate("listUpdateDtoInType", dtoIn);
 
     const uuAppErrorMap = ValidationHelper.processValidationResult(
       dtoIn,
       validationResult,
-      // A3
       WARNINGS.updateUnsupportedKeys.code,
-      // A4
       Errors.Update.InvalidDtoIn
     );
 
+    // HDS 2
     const list = await this.dao.get(awid, dtoIn.id);
-    // A5
+    // A3
     if (!list) {
-      throw new Errors.Update.listDoesNotExist({ uuAppErrorMap }, { listId: dtoIn.id });
+      throw new Errors.Update.ListDoesNotExist({ uuAppErrorMap }, { listId: dtoIn.id });
     }
-    const obj = { ...list, ...dtoIn };
 
+    // A4
+    const obj = { ...list, ...dtoIn };
     let restDtoIn = {};
     restDtoIn = {
       ...obj,
     };
-    let updatedList = await this.dao.update(restDtoIn);;
+    let uuObject = await this.dao.update(restDtoIn);;
 
-    return { ...updatedList, uuAppErrorMap }
+    // 2.3
+    return { ...uuObject, uuAppErrorMap }
   }
 
   async list(awid, dtoIn) {
-    // HDS 1
+
+    // HDS 1 (1.1 - 1.3)
     // A1,2
-    // const listInstance = await listMain.checkInstance(
-    //   awid,
-    //   Errors.List.listInstanceDoesNotExist
-    // );
     const validationResult = this.validator.validate("listListDtoInType", dtoIn);
     const uuAppErrorMap = ValidationHelper.processValidationResult(
       dtoIn,
@@ -88,46 +141,46 @@ class ListAbl {
       WARNINGS.listUnsupportedKeys.code,
       Errors.Get.InvalidDtoIn
     );
-    // HDS2.4
 
+    // HDS 1.4
     if (!dtoIn.pageInfo) dtoIn.pageInfo = {};
     if (!dtoIn.pageInfo.pageIndex) dtoIn.pageInfo.pageIndex = DEFAULTS.pageIndex;
     if (!dtoIn.pageInfo.pageSize) dtoIn.pageInfo.pageSize = DEFAULTS.pageSize;
 
-    // HDS3
-    const list = await this.dao.list(awid, dtoIn.pageInfo, dtoIn.order);
+    // HDS 2
+    const list = await this.dao.list(awid, dtoIn.pageInfo);
 
-    // HDS4
+    // HDS 3
     return { ...list, uuAppErrorMap };
   }
 
   async get(awid, dtoIn) {
+
     // HDS1
-    // A1,2
-    // const listInstance = await listMain.checkInstance(
-    //   awid,
-    //   Errors.Get.listInstanceDoesNotExist
-    // );
-    // HDS2
-    // HDS2.1
+    // A1, 2
     const validationResult = this.validator.validate("listGetDtoInType", dtoIn);
-    // HDS2.2,2.3
     const uuAppErrorMap = ValidationHelper.processValidationResult(
       dtoIn,
       validationResult,
       WARNINGS.getUnsupportedKeys.code,
       Errors.Get.InvalidDtoIn
     );
-    const list = await this.dao.get(awid, dtoIn.id);
 
+    // HDS 2
+    // A3
+    const list = await this.dao.get(awid, dtoIn.id);
     if (!list) {
-      throw new Errors.Get.listDoesNotExist(uuAppErrorMap, { listId: dtoIn.id });
+      throw new Errors.Get.ListDoesNotExist(uuAppErrorMap, { listId: dtoIn.id });
     }
+
+    // HDS 3
     return { list, uuAppErrorMap };
   }
 
   async create(awid, dtoIn, uuAppErrorMap = {}) {
+
       // HDS 1
+      // A1, 2
       const validationResult = this.validator.validate("listCreateDtoInType", dtoIn);
       uuAppErrorMap = ValidationHelper.processValidationResult(
         dtoIn,
@@ -135,17 +188,17 @@ class ListAbl {
         WARNINGS.createUnsupportedKeys.code,
         Errors.Create.InvalidDtoIn
       );
-      // const uuObject = {
-      //   awid,
-      //   ...restDtoIn,
-      // };
+
+      const uuObject = {
+        awid,
+        ...dtoIn,
+      };
 
       // HDS 2
-      // 2.1
+      // A3
       let list = null;
-
       try {
-        list = await this.dao.create({...dtoIn, awid});
+        list = await this.dao.create({...uuObject, awid});
       } catch (e) {
         throw new Errors.Create.ListDaoCreateFailed(uuAppErrorMap, { dtoIn, cause: e });
       }

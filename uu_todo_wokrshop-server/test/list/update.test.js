@@ -16,10 +16,12 @@ afterAll(async () => {
 describe(`Testing ${useCase} uuCmd...`, () => {
   test("HDS", async () => {
     const dtoIn = {
-      name: "Do Something",
+      id: "60e556651d0e4b39c407deea",
+      name: "Create BIG FUUUN UPDATE"
     };
 
-    const list = await TestHelper.executePostCommand("list/create", dtoIn);
+    const new_list = await TestHelper.executePostCommand("list/create", dtoIn);
+    const list = await TestHelper.executePostCommand("list/update", new_list);
     const result = await TestHelper.executePostCommand(useCase, {id: list.id});
 
     expect(result.status).toEqual(200);

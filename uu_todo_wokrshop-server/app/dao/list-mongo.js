@@ -24,6 +24,11 @@ class ListMongo extends UuObjectDao {
   async update({ awid, id, ...uuObject }) {
     return await super.findOneAndUpdate({ awid, _id: id }, uuObject);
   }
+
+  async delete(awid, id) {
+    return super.deleteOne({ awid, id });
+  }
+
 }
 
 module.exports = ListMongo;

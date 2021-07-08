@@ -6,7 +6,7 @@ beforeAll(async () => {
   await TestHelper.setup();
   await TestHelper.initUuSubAppInstance();
   await TestHelper.createUuAppWorkspace();
-  await TestHelper.initUuAppWorkspace({ "uuAppProfileAuthorities": "urn:uu:GGPLUS4U" });
+  await TestHelper.initUuAppWorkspace({ uuAppProfileAuthorities: "urn:uu:GGPLUS4U" });
 });
 
 afterAll(async () => {
@@ -14,16 +14,11 @@ afterAll(async () => {
 });
 
 describe(`Testing ${useCase} uuCmd...`, () => {
-  test("HDS", async () => {
+  test("HDS - SHO TAM", async () => {
     const dtoIn = {
-      pageInfo: {
-        "pageIndex": 0,
-        "pageSize": 1000,
-      }
-    }
+      name: "list name",
+    };
     const result = await TestHelper.executeGetCommand(useCase, dtoIn);
-    // const list = await TestHelper.executePostCommand("list/list", dtoIn);
-    // const result = await TestHelper.executeGetCommand(useCase, {id: list.id});
 
     expect(result.status).toEqual(200);
     expect(result.data.uuAppErrorMap).toBeDefined();
@@ -31,38 +26,33 @@ describe(`Testing ${useCase} uuCmd...`, () => {
 
   test("unsupported keys", async () => {
     const dtoIn = {
-      pageInfo: {
-        "pageIndex": 0,
-        "pageSize": 1000,
-        title: "Some title"
-      }
+      pageInfo: {},
+      anyKey: 32424,
     };
 
-    // const list = await TestHelper.executePostCommand("list/list", dtoIn);
+    const errorCode = "uu-todo-wokrshop/list/list/unsupportedKeys";
     const result = await TestHelper.executeGetCommand(useCase, dtoIn);
 
     expect(result.status).toEqual(200);
     expect(result.data.uuAppErrorMap).toBeDefined();
-    // expect(result.data.uuAppErrorMap[errorCode]).toBeDefined();
+    expect(result.data.uuAppErrorMap[errorCode]).toBeDefined();
   });
 
   test("Invalid DtoIn", async () => {
-    expect.assertions(2);
+    expect.assertions(3);
 
-    // const errorCode = `uu-todo-workshop/${useCase}/invalidDtoIn`;
+    const errorCode =  "uu-todo-wokrshop/list/get/invalidDtoIn";
 
     const dtoIn = {
-      pageInfo: "Some object"
+      pageInfo: "sss",
     };
 
     try {
       await TestHelper.executeGetCommand(useCase, dtoIn);
     } catch (e) {
       expect(e.status).toEqual(400);
-      // expect(e.code).toEqual(errorCode);
+      expect(e.code).toEqual(errorCode);
       expect(e.dtoOut.uuAppErrorMap).toBeDefined();
     }
-
   });
-
 });

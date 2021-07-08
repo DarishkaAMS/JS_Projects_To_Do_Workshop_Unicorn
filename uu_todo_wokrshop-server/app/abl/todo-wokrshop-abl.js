@@ -35,7 +35,7 @@ class TodoWokrshopAbl {
     );
 
     // HDS 2
-    const schemas = ["todoWokrshop"];
+    const schemas = ["todoWokrshop", "item", "list"];
     let schemaCreateResults = schemas.map(async (schema) => {
       try {
         return await DaoFactory.getDao(schema).createSchema();

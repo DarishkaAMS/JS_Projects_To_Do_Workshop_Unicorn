@@ -31,7 +31,7 @@ describe(`Testing ${useCase} uuCmd...`, () => {
       age: 56
     };
 
-    const errorCode = "uu-list-main/list/create/unsupportedKeys";
+    const errorCode = `uu-todo-wokrshop/${useCase}/invalidDtoIn`;
 
     const result = await TestHelper.executePostCommand(useCase, dtoIn);
 
@@ -41,9 +41,9 @@ describe(`Testing ${useCase} uuCmd...`, () => {
   });
 
   test("Invalid DtoIn", async () => {
-    expect.assertions(2);
+    expect.assertions(3);
 
-    // const errorCode = `uu-todo-workshop/${useCase}/invalidDtoIn`;
+    const errorCode = `uu-todo-wokrshop/${useCase}/invalidDtoIn`;
 
     const dtoIn = {
       name: 3333,
@@ -53,7 +53,7 @@ describe(`Testing ${useCase} uuCmd...`, () => {
       await TestHelper.executePostCommand(useCase, dtoIn);
     } catch (e) {
       expect(e.status).toEqual(400);
-      // expect(e.code).toEqual(errorCode);
+      expect(e.code).toEqual(errorCode);
       expect(e.dtoOut.uuAppErrorMap).toBeDefined();
     }
 

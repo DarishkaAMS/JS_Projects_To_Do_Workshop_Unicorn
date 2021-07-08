@@ -4,7 +4,7 @@ const { UuObjectDao } = require("uu_appg01_server").ObjectStore;
 class ItemMongo extends UuObjectDao {
 
   async createSchema(){
-    await super.createIndex({ awid: 1, listid: 1, completed:1 }, { unique: true });
+    await super.createIndex({ awid: 1, listid: 1, completed:1 });
   }
 
   async create(uuObject) {
@@ -27,8 +27,12 @@ class ItemMongo extends UuObjectDao {
     return await super.findOneAndUpdate({ awid, _id: id }, uuObject);
   }
 
-  async listByList(awid, listId, pageInfo = {}, orderBy = {}) {
-    return await super.find({ awid, listId }, pageInfo, orderBy);
+  async listByList(filter, pageInfo) {
+    return await super.find(filter, pageInfo);
+  }
+
+  async listByListIdAndCompleted(filter, pageInfo) {
+    return await super.find(filter, pageInfo);
   }
 
   async deleteMany(awid, id) {

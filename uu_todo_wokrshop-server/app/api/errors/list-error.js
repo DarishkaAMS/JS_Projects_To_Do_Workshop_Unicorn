@@ -14,22 +14,13 @@ const Create = {
     }
   },
 
-  listInstanceDoesNotExist: class extends TodoWokrshopUseCaseError {
-    constructor() {
-      super(...arguments);
-      this.code = `${Create.UC_CODE}listInstanceDoesNotExist`;
-      this.message = "ListInstance does not exist.";
-    }
-  },
-
   ListDaoCreateFailed: class extends TodoWokrshopUseCaseError {
     constructor() {
       super(...arguments);
-      this.code = `${Create.UC_CODE}listCreateDaoFailed`;
+      this.code = `${Create.UC_CODE}listDaoCreateFailed`;
       this.message = "Creating a list by list DAO create failed.";
     }
   },
-
 };
 
 const Get = {
@@ -42,10 +33,11 @@ const Get = {
       this.message = "DtoIn is not valid.";
     }
   },
-  listDoesNotExist: class extends TodoWokrshopUseCaseError {
+
+  ListDoesNotExist: class extends TodoWokrshopUseCaseError {
     constructor() {
       super(...arguments);
-      this.code = `${Get.UC_CODE}jokeDoesNotExist`;
+      this.code = `${Get.UC_CODE}listDoesNotExist`;
       this.message = "List does not exist.";
     }
   },
@@ -69,23 +61,54 @@ const Update = {
   InvalidDtoIn: class extends TodoWokrshopUseCaseError {
     constructor() {
       super(...arguments);
-      this.code = `${List.UC_CODE}invalidDtoIn`;
+      this.code = `${Update.UC_CODE}invalidDtoIn`;
       this.message = "DtoIn is not valid.";
     }
   },
 
-  listInstanceDoesNotExist: class extends TodoWokrshopUseCaseError {
+  ListDoesNotExist: class extends TodoWokrshopUseCaseError {
     constructor() {
       super(...arguments);
-      this.code = `${List.UC_CODE}listInstanceDoesNotExist`;
-      this.message = "ListInstance does not exist.";
+      this.code = `${Update.UC_CODE}listDoesNotExist`;
+      this.message = "List with this ID does not exist.";
     }
   },
 };
 
 const Delete = {
   UC_CODE: `${LIST_ERROR_PREFIX}delete/`,
-  
+
+  InvalidDtoIn: class extends TodoWokrshopUseCaseError {
+    constructor() {
+      super(...arguments);
+      this.code = `${Delete.UC_CODE}invalidDtoIn`;
+      this.message = "DtoIn is not valid.";
+    }
+  },
+
+  ListNotEmpty: class extends TodoWokrshopUseCaseError {
+    constructor() {
+      super(...arguments);
+      this.code = `${Delete.UC_CODE}listNotEmpty`;
+      this.message = "List in not empty.";
+    }
+  },
+
+  ItemDaoDeleteFailed: class extends TodoWokrshopUseCaseError {
+    constructor() {
+      super(...arguments);
+      this.code = `${Delete.UC_CODE}itemDaoDeleteFailed`;
+      this.message = "Deleting an item by list DAO failed.";
+    }
+  },
+
+  ListDaoDeleteFailed: class extends TodoWokrshopUseCaseError {
+    constructor() {
+      super(...arguments);
+      this.code = `${Delete.UC_CODE}listDaoDeleteFailed`;
+      this.message = "Deleting a list by list DAO failed.";
+    }
+  }
 };
 
 module.exports = {

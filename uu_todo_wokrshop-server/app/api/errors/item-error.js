@@ -14,10 +14,10 @@ const Create = {
     }
   },
 
-  listDoesNotExist: class extends TodoWokrshopUseCaseError {
+  ListDoesNotExist: class extends TodoWokrshopUseCaseError {
     constructor() {
       super(...arguments);
-      this.code = `${Create.UC_CODE}itemInstanceDoesNotExist`;
+      this.code = `${Create.UC_CODE}listDoesNotExist`;
       this.message = "List with this ID does not exist.";
     }
   },
@@ -32,10 +32,10 @@ const Get = {
       this.message = "DtoIn is not valid.";
     }
   },
-  itemDoesNotExist: class extends TodoWokrshopUseCaseError {
+  ItemDoesNotExist: class extends TodoWokrshopUseCaseError {
     constructor() {
       super(...arguments);
-      this.code = `${Get.UC_CODE}jokeDoesNotExist`;
+      this.code = `${Get.UC_CODE}itemDoesNotExist`;
       this.message = "Item does not exist.";
     }
   },
@@ -55,6 +55,7 @@ const List = {
 
 const Update = {
   UC_CODE: `${ITEM_ERROR_PREFIX}update/`,
+
   InvalidDtoIn: class extends TodoWokrshopUseCaseError {
     constructor() {
       super(...arguments);
@@ -63,18 +64,18 @@ const Update = {
     }
   },
 
-  itemDoesNotExist: class extends TodoWokrshopUseCaseError {
+  ItemDoesNotExist: class extends TodoWokrshopUseCaseError {
     constructor() {
       super(...arguments);
-      this.code = `${List.UC_CODE}itemInstanceDoesNotExist`;
+      this.code = `${Update.UC_CODE}itemDoesNotExist`;
       this.message = "Item does not exist.";
     }
   },
 
-  listDoesNotExist: class extends TodoWokrshopUseCaseError {
+  ListDoesNotExist: class extends TodoWokrshopUseCaseError {
     constructor() {
       super(...arguments);
-      this.code = `${List.UC_CODE}listInstanceDoesNotExist`;
+      this.code = `${Update.UC_CODE}listDoesNotExist`;
       this.message = "List does not exist.";
     }
   },
@@ -82,7 +83,7 @@ const Update = {
 
 const Complete = {
   UC_CODE: `${ITEM_ERROR_PREFIX}complete/`,
-  // invalidDtoIn
+
   InvalidDtoIn: class extends TodoWokrshopUseCaseError {
     constructor() {
       super(...arguments);
@@ -90,10 +91,10 @@ const Complete = {
       this.message = "DtoIn is not valid.";
     }
   },
-  itemDoesNotExist: class extends TodoWokrshopUseCaseError {
+  ItemDoesNotExist: class extends TodoWokrshopUseCaseError {
     constructor() {
       super(...arguments);
-      this.code = `${Complete.UC_CODE}itemInstanceDoesNotExist`;
+      this.code = `${Complete.UC_CODE}itemDoesNotExist`;
       this.message = "Item does not exist.";
     }
   },
@@ -101,11 +102,19 @@ const Complete = {
 
 const Delete = {
   UC_CODE: `${ITEM_ERROR_PREFIX}delete/`,
+
   InvalidDtoIn: class extends TodoWokrshopUseCaseError {
     constructor() {
       super(...arguments);
       this.code = `${Delete.UC_CODE}invalidDtoIn`;
       this.message = "DtoIn is not valid.";
+    }
+  },
+  ItemDoesNotExist: class extends TodoWokrshopUseCaseError {
+    constructor() {
+      super(...arguments);
+      this.code = `${Complete.UC_CODE}itemDoesNotExist`;
+      this.message = "Item does not exist.";
     }
   },
 };

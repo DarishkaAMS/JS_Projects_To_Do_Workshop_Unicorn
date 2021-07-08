@@ -17,5 +17,10 @@ const listListDtoInType = shape({
 
 const listUpdateDtoInType = shape({
   id: id().isRequired(),
-  name: string(1,30)
+  name: string(1, 30)
 })
+
+const listDeleteDtoInType = shape({
+  id: id().isRequired(),
+  forceDelete: boolean()
+});
